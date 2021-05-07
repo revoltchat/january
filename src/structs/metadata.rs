@@ -29,6 +29,7 @@ impl Metadata {
             image: properties
                 .remove("og:image")
                 .or_else(|| properties.remove("twitter:image"))
+                .or_else(|| properties.remove("twitter:image:src"))
                 .map(|url| {
                     let mut size = MediaSize::Preview;
                     if let Some(card) = properties.remove("twitter:card") {

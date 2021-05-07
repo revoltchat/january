@@ -7,16 +7,16 @@ use std::fmt::Display;
 #[derive(Serialize, Debug)]
 #[serde(tag = "type")]
 pub enum Error {
-    /*FileTooLarge { max_size: usize },
-    FileTypeNotAllowed,
-    FailedToReceive,
-    DatabaseError,
-    MissingData,
-    UnknownTag,
-    ProbeError,
-    NotFound,
-    IOError,
-    S3Error,*/
+    CouldNotDetermineImageSize,
+    FailedToParseContentType,
+    FailedToConsumeBytes,
+    FailedToConsumeText,
+    MetaSelectionFailed,
+    MissingContentType,
+    NotAllowedToProxy,
+    ConversionFailed,
+    ReqwestFailed,
+    RequestFailed,
     LabelMe,
 }
 
@@ -29,16 +29,16 @@ impl Display for Error {
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match &self {
-            /* Error::FileTooLarge { .. } => StatusCode::PAYLOAD_TOO_LARGE,
-            Error::FileTypeNotAllowed => StatusCode::BAD_REQUEST,
-            Error::FailedToReceive => StatusCode::BAD_REQUEST,
-            Error::DatabaseError => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::MissingData => StatusCode::BAD_REQUEST,
-            Error::UnknownTag => StatusCode::BAD_REQUEST,
-            Error::ProbeError => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::NotFound => StatusCode::NOT_FOUND,
-            Error::IOError => StatusCode::INTERNAL_SERVER_ERROR,
-            Error::S3Error => StatusCode::INTERNAL_SERVER_ERROR, */
+            Error::CouldNotDetermineImageSize => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::FailedToParseContentType => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::FailedToConsumeBytes => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::FailedToConsumeText => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::MetaSelectionFailed => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::MissingContentType => StatusCode::BAD_REQUEST,
+            Error::NotAllowedToProxy => StatusCode::BAD_REQUEST,
+            Error::ConversionFailed => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::ReqwestFailed => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::RequestFailed => StatusCode::BAD_REQUEST,
             Error::LabelMe => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
