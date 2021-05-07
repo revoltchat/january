@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use mime::Mime;
-use reqwest::{Response, header::CONTENT_TYPE};
+use reqwest::{header::CONTENT_TYPE, Response};
 use scraper::{Html, Selector};
 
 use super::result::Error;
@@ -18,7 +18,7 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
         .ok_or_else(|| Error::LabelMe)?
         .to_str()
         .map_err(|_| Error::LabelMe)?;
-    
+
     let mime: mime::Mime = content_type.parse().map_err(|_| Error::LabelMe)?;
     Ok((resp, mime))
 }

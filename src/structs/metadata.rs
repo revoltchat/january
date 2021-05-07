@@ -1,7 +1,10 @@
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::util::{request::{consume_size, fetch}, result::Error};
+use crate::util::{
+    request::{consume_size, fetch},
+    result::Error,
+};
 
 use super::media::{Media, MediaSize};
 
@@ -9,7 +12,7 @@ use super::media::{Media, MediaSize};
 pub struct Metadata {
     title: Option<String>,
     description: Option<String>,
-    image: Option<Media>
+    image: Option<Media>,
 }
 
 impl Metadata {
@@ -23,7 +26,8 @@ impl Metadata {
                 .remove("og:description")
                 .or_else(|| properties.remove("twitter:description"))
                 .or_else(|| properties.remove("description")),
-            image: properties.remove("og:image")
+            image: properties
+                .remove("og:image")
                 .or_else(|| properties.remove("twitter:image"))
                 .map(|url| {
                     let mut size = MediaSize::Preview;
@@ -33,8 +37,13 @@ impl Metadata {
                         }
                     }
 
-                    Media { url, width: 0, height: 0, size }
-                })
+                    Media {
+                        url,
+                        width: 0,
+                        height: 0,
+                        size,
+                    }
+                }),
         }
     }
 

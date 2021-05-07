@@ -1,10 +1,16 @@
-use actix_web::{ web::{self, Query}, Responder };
-use serde::{Deserialize};
+use actix_web::{
+    web::{self, Query},
+    Responder,
+};
+use serde::Deserialize;
 
-use crate::{structs::media::{Media, MediaSize}, util::result::Error};
 use crate::structs::embed::Embed;
 use crate::structs::metadata::Metadata;
 use crate::util::request::{consume_metatags, fetch};
+use crate::{
+    structs::media::{Media, MediaSize},
+    util::{request::consume_size, result::Error},
+};
 
 #[derive(Deserialize)]
 pub struct Parameters {
@@ -19,17 +25,16 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
         let properties = consume_metatags(resp).await?;
         let mut metadata = Metadata::from(properties);
         metadata.resolve_external().await;
-        
+
         Ok(web::Json(Embed::Website(metadata)))
     } else if let mime::IMAGE = mime.type_() {
-        let bytes = resp.bytes().await.map_err(|_| Error::LabelMe)?;
-        if let Ok(size) = imagesize::blob_size(&bytes) {
-            let imagesize::ImageSize { width, height } = size;
-            let  width =  width as isize;
-            let height = height as isize;
-
-            let media = Media { url, width, height, size: MediaSize::Large };
-            Ok(web::Json(Embed::Image(media)))
+        if let Ok((width, height)) = consume_size(resp).await {
+            Ok(web::Json(Embed::Image(Media {
+                url,
+                width,
+                height,
+                size: MediaSize::Large,
+            })))
         } else {
             Ok(web::Json(Embed::None))
         }

@@ -7,5 +7,5 @@ use super::{media::Media, metadata::Metadata};
 pub enum Embed {
     Website(Metadata),
     Image(Media),
-    None
+    None,
 }

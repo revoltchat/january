@@ -1,2 +1,2 @@
-pub mod result;
 pub mod request;
+pub mod result;
