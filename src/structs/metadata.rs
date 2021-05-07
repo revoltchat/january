@@ -8,7 +8,7 @@ use crate::util::{
 
 use super::media::{Media, MediaSize};
 
-#[derive(Default, Debug, Serialize)]
+#[derive(Debug, Serialize)]
 pub struct Metadata {
     title: Option<String>,
     description: Option<String>,
@@ -63,5 +63,9 @@ impl Metadata {
         if self.resolve_image().await.is_err() {
             self.image = None;
         }
+    }
+
+    pub fn is_none(&self) -> bool {
+        self.title.is_none() && self.description.is_none() && self.image.is_none()
     }
 }

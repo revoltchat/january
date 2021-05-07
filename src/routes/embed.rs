@@ -26,6 +26,10 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
         let mut metadata = Metadata::from(properties);
         metadata.resolve_external().await;
 
+        if metadata.is_none() {
+            return Ok(web::Json(Embed::None))
+        }
+
         Ok(web::Json(Embed::Website(metadata)))
     } else if let mime::IMAGE = mime.type_() {
         if let Ok((width, height)) = consume_size(resp).await {
