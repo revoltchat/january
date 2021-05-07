@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
             .route("/embed", web::get().to(routes::embed::get))
             .route("/proxy", web::get().to(routes::proxy::get))
     })
-    .bind(("127.0.0.1", 3000))?
+    .bind(("0.0.0.0", 3000))?
     .run()
     .await
 }
