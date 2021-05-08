@@ -6,7 +6,7 @@ use serde::Deserialize;
 
 use crate::structs::embed::Embed;
 use crate::structs::metadata::Metadata;
-use crate::util::request::{consume_metatags, fetch};
+use crate::util::request::fetch;
 use crate::{
     structs::media::{Media, MediaSize},
     util::{request::consume_size, result::Error},
@@ -22,8 +22,7 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
     let (resp, mime) = fetch(&url).await?;
 
     if let mime::HTML = mime.subtype() {
-        let properties = consume_metatags(resp).await?;
-        let mut metadata = Metadata::from(properties);
+        let mut metadata = Metadata::from(resp, url).await?;
         metadata.resolve_external().await;
 
         if metadata.is_none() {

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use mime::Mime;
-use reqwest::{header::CONTENT_TYPE, Client, ClientBuilder, Response};
+use reqwest::{header::CONTENT_TYPE, Client, Response};
 use scraper::{Html, Selector};
 
 use super::result::Error;
@@ -21,7 +21,7 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
         .send()
         .await
         .map_err(|_| Error::ReqwestFailed)?;
-    
+
     if !resp.status().is_success() {
         return Err(Error::RequestFailed);
     }
@@ -39,21 +39,9 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
     Ok((resp, mime))
 }
 
-pub async fn consume_metatags(resp: Response) -> Result<HashMap<String, String>, Error> {
+pub async fn consume_fragment(resp: Response) -> Result<Html, Error> {
     let body = resp.text().await.map_err(|_| Error::FailedToConsumeText)?;
-    let fragment = Html::parse_document(&body);
-    let selector = Selector::parse("meta").map_err(|_| Error::MetaSelectionFailed)?;
-
-    let mut properties = HashMap::new();
-    for el in fragment.select(&selector) {
-        let node = el.value();
-
-        if let (Some(property), Some(content)) = (node.attr("property"), node.attr("content")) {
-            properties.insert(property.to_string(), content.to_string());
-        }
-    }
-
-    Ok(properties)
+    Ok(Html::parse_document(&body))
 }
 
 pub async fn consume_size(resp: Response) -> Result<(isize, isize), Error> {
