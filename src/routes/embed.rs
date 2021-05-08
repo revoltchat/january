@@ -27,7 +27,7 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
         metadata.resolve_external().await;
 
         if metadata.is_none() {
-            return Ok(web::Json(Embed::None))
+            return Ok(web::Json(Embed::None));
         }
 
         Ok(web::Json(Embed::Website(metadata)))

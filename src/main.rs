@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use actix_web::{web, App, HttpServer};
 
 pub mod routes;

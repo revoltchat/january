@@ -10,8 +10,11 @@ use super::media::{Media, MediaSize};
 
 #[derive(Debug, Serialize)]
 pub struct Metadata {
+    #[serde(skip_serializing_if = "Option::is_none")]
     title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     image: Option<Media>,
 }
 

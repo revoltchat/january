@@ -1,4 +1,4 @@
-use actix_web::{HttpResponse, Responder, web::Query};
+use actix_web::{web::Query, HttpResponse, Responder};
 use serde::Deserialize;
 
 use crate::util::request::fetch;
@@ -14,11 +14,11 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
     let (resp, mime) = fetch(&url).await?;
 
     if let mime::IMAGE = mime.type_() {
-        let body = resp.bytes().await.map_err(|_| Error::FailedToConsumeBytes)?;
-        Ok(
-            HttpResponse::Ok()
-                .body(body)
-        )
+        let body = resp
+            .bytes()
+            .await
+            .map_err(|_| Error::FailedToConsumeBytes)?;
+        Ok(HttpResponse::Ok().body(body))
     } else {
         Err(Error::NotAllowedToProxy)
     }

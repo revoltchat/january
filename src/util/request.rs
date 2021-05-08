@@ -1,15 +1,28 @@
 use std::collections::HashMap;
 
 use mime::Mime;
-use reqwest::{header::CONTENT_TYPE, Response};
+use reqwest::{header::CONTENT_TYPE, Client, ClientBuilder, Response};
 use scraper::{Html, Selector};
 
 use super::result::Error;
 
+lazy_static! {
+    static ref CLIENT: Client = reqwest::Client::builder()
+        .user_agent(
+            "Mozilla/5.0 (compatible; January/1.0; +https://gitlab.insrt.uk/revolt/january)"
+        )
+        .build()
+        .unwrap();
+}
+
 pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
-    let resp = reqwest::get(url).await.map_err(|_| Error::ReqwestFailed)?;
+    let resp = CLIENT
+        .get(url)
+        .send()
+        .await
+        .map_err(|_| Error::ReqwestFailed)?;
+    
     if !resp.status().is_success() {
-        dbg!(resp.text().await.unwrap());
         return Err(Error::RequestFailed);
     }
 
@@ -19,8 +32,10 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
         .ok_or_else(|| Error::MissingContentType)?
         .to_str()
         .map_err(|_| Error::ConversionFailed)?;
-    
-    let mime: mime::Mime = content_type.parse().map_err(|_| Error::FailedToParseContentType)?;
+
+    let mime: mime::Mime = content_type
+        .parse()
+        .map_err(|_| Error::FailedToParseContentType)?;
     Ok((resp, mime))
 }
 
@@ -42,7 +57,10 @@ pub async fn consume_metatags(resp: Response) -> Result<HashMap<String, String>,
 }
 
 pub async fn consume_size(resp: Response) -> Result<(isize, isize), Error> {
-    let bytes = resp.bytes().await.map_err(|_| Error::FailedToConsumeBytes)?;
+    let bytes = resp
+        .bytes()
+        .await
+        .map_err(|_| Error::FailedToConsumeBytes)?;
     if let Ok(size) = imagesize::blob_size(&bytes) {
         Ok((size.width as isize, size.height as isize))
     } else {
