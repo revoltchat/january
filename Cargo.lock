@@ -781,6 +781,7 @@ dependencies = [
  "imagesize",
  "lazy_static",
  "mime",
+ "regex",
  "reqwest",
  "scraper",
  "serde",

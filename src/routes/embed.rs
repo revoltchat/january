@@ -8,7 +8,7 @@ use crate::structs::embed::Embed;
 use crate::structs::metadata::Metadata;
 use crate::util::request::fetch;
 use crate::{
-    structs::media::{Media, MediaSize},
+    structs::media::{Image, ImageSize},
     util::{request::consume_size, result::Error},
 };
 
@@ -32,11 +32,11 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
         Ok(web::Json(Embed::Website(metadata)))
     } else if let mime::IMAGE = mime.type_() {
         if let Ok((width, height)) = consume_size(resp).await {
-            Ok(web::Json(Embed::Image(Media {
+            Ok(web::Json(Embed::Image(Image {
                 url,
                 width,
                 height,
-                size: MediaSize::Large,
+                size: ImageSize::Large,
             })))
         } else {
             Ok(web::Json(Embed::None))

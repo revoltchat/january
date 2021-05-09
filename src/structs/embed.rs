@@ -1,11 +1,11 @@
 use serde::Serialize;
 
-use super::{media::Media, metadata::Metadata};
+use super::{media::Image, metadata::Metadata};
 
 #[derive(Debug, Serialize)]
 #[serde(tag = "type")]
 pub enum Embed {
     Website(Metadata),
-    Image(Media),
+    Image(Image),
     None,
 }

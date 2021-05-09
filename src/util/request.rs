@@ -1,8 +1,6 @@
-use std::collections::HashMap;
-
 use mime::Mime;
 use reqwest::{header::CONTENT_TYPE, Client, Response};
-use scraper::{Html, Selector};
+use scraper::Html;
 
 use super::result::Error;
 
