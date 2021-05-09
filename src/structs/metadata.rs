@@ -4,13 +4,10 @@ use scraper::Selector;
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::{
-    structs::special::TwitchType,
-    util::{
+use crate::{structs::special::{BandcampType, TwitchType}, util::{
         request::{consume_fragment, consume_size, fetch},
         result::Error,
-    },
-};
+    }};
 
 use super::{media::{Image, ImageSize, Video}, special::Special};
 
@@ -169,50 +166,56 @@ impl Metadata {
             static ref RE_TWITCH_VOD: Regex = Regex::new("^(?:https?://)?(?:www\\.|go\\.)?twitch\\.tv/videos/([0-9]+)($|\\?)").unwrap();
             static ref RE_TWITCH_CLIP: Regex = Regex::new("^(?:https?://)?(?:www\\.|go\\.)?twitch\\.tv/(?:[a-z0-9_]+)/clip/([A-z0-9_-]+)($|\\?)").unwrap();
 
-            static ref RE_SPOTIFY: Regex = Regex::new("^(?:https?://)?open.spotify.com/(track|user|artist|album|playlist)/([a-zA-Z0-9]+)").unwrap();
-            static ref RE_SOUNDCLOUD: Regex = Regex::new("^(?:https?://)?soundcloud.com/([a-zA-Z0-9-]+)/([a-zA-Z0-9-]+)").unwrap();
+            static ref RE_SPOTIFY: Regex = Regex::new("^(?:https?://)?open.spotify.com/(track|user|artist|album|playlist)/([A-z0-9]+)").unwrap();
+            static ref RE_SOUNDCLOUD: Regex = Regex::new("^(?:https?://)?soundcloud.com/([a-zA-Z0-9-]+)/([A-z0-9-]+)").unwrap();
+            static ref RE_BANDCAMP: Regex = Regex::new("^(?:https?://)?(?:[A-z0-9_-]+).bandcamp.com/(track|album)/([A-z0-9_-]+)").unwrap();
         }
 
-        if RE_YOUTUBE.is_match(&self.url) {
+        if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
             if let Some(ogtype) = &self.opengraph_type {
                 if ogtype == "video.other" {
-                    if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
-                        return Ok(Special::YouTube {
-                            id: captures[1].to_string(),
-                        });
-                    }
+                    return Ok(Special::YouTube {
+                        id: captures[1].to_string(),
+                    });
                 }
             }
-        } else if RE_TWITCH.is_match(&self.url) {
-            if let Some(captures) = RE_TWITCH.captures_iter(&self.url).next() {
+        } else if let Some(captures) = RE_TWITCH.captures_iter(&self.url).next() {
                 return Ok(Special::Twitch {
                     id: captures[1].to_string(),
                     content_type: TwitchType::Channel,
                 });
-            }
-        } else if RE_TWITCH_VOD.is_match(&self.url) {
-            if let Some(captures) = RE_TWITCH_VOD.captures_iter(&self.url).next() {
-                return Ok(Special::Twitch {
-                    id: captures[1].to_string(),
-                    content_type: TwitchType::Video,
-                });
-            }
-        } else if RE_TWITCH_CLIP.is_match(&self.url) {
-            if let Some(captures) = RE_TWITCH_CLIP.captures_iter(&self.url).next() {
-                return Ok(Special::Twitch {
-                    id: captures[1].to_string(),
-                    content_type: TwitchType::Clip,
-                });
-            }
-        } else if RE_SPOTIFY.is_match(&self.url) {
-            if let Some(captures) = RE_SPOTIFY.captures_iter(&self.url).next() {
-                return Ok(Special::Spotify {
-                    content_type: captures[1].to_string(),
-                    id: captures[2].to_string(),
-                });
-            }
+        } else if let Some(captures) = RE_TWITCH_VOD.captures_iter(&self.url).next() {
+            return Ok(Special::Twitch {
+                id: captures[1].to_string(),
+                content_type: TwitchType::Video,
+            });
+        } else if let Some(captures) = RE_TWITCH_CLIP.captures_iter(&self.url).next() {
+            return Ok(Special::Twitch {
+                id: captures[1].to_string(),
+                content_type: TwitchType::Clip,
+            });
+        } else if let Some(captures) = RE_SPOTIFY.captures_iter(&self.url).next() {
+            return Ok(Special::Spotify {
+                content_type: captures[1].to_string(),
+                id: captures[2].to_string(),
+            });
         } else if RE_SOUNDCLOUD.is_match(&self.url) {
             return Ok(Special::Soundcloud);
+        } else if RE_BANDCAMP.is_match(&self.url) {
+            lazy_static! {
+                static ref RE_TRACK: Regex = Regex::new("track=(\\d+)").unwrap();
+                static ref RE_ALBUM: Regex = Regex::new("album=(\\d+)").unwrap();
+            }
+
+            if let Some(video) = &self.video {
+                if let Some(captures) = RE_TRACK.captures_iter(&video.url).next() {
+                    return Ok(Special::Bandcamp { content_type: BandcampType::Track, id: captures[1].to_string() })
+                }
+
+                if let Some(captures) = RE_ALBUM.captures_iter(&video.url).next() {
+                    return Ok(Special::Bandcamp { content_type: BandcampType::Album, id: captures[1].to_string() })
+                }
+            }
         }
 
         Ok(Special::None)
