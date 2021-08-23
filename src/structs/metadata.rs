@@ -32,7 +32,7 @@ pub struct Metadata {
     #[serde(skip_serializing_if = "Option::is_none")]
     icon_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    color: Option<String>,
+    colour: Option<String>,
 }
 
 impl Metadata {
@@ -130,7 +130,7 @@ impl Metadata {
 
                     v
                 }),
-            color: meta.remove("theme-color"),
+            colour: meta.remove("theme-color"),
             opengraph_type: meta.remove("og:type"),
             site_name: meta.remove("og:site_name"),
             url: meta.remove("og:url").unwrap_or(url),
