@@ -172,12 +172,22 @@ impl Metadata {
         }
 
         if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
-            if let Some(ogtype) = &self.opengraph_type {
-                if ogtype == "video.other" {
+            lazy_static! {
+                static ref RE_TIMESTAMP: Regex = Regex::new("(?:\\?|&)(?:t|start)=([\\w]+)").unwrap();
+            }
+
+            if let Some(video) = &self.video {
+                if let Some(timestamp_captures) = RE_TIMESTAMP.captures_iter(&video.url).next() {
                     return Ok(Special::YouTube {
                         id: captures[1].to_string(),
+                        timestamp: Some(timestamp_captures[1].to_string()),
                     });
                 }
+
+                return Ok(Special::YouTube {
+                    id: captures[1].to_string(),
+                    timestamp: None,
+                });
             }
         } else if let Some(captures) = RE_TWITCH.captures_iter(&self.url).next() {
                 return Ok(Special::Twitch {
