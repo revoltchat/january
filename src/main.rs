@@ -11,6 +11,7 @@ pub mod util;
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| {
         App::new()
+            .route("/", web::get().to(routes::info::get))
             .route("/embed", web::get().to(routes::embed::get))
             .route("/proxy", web::get().to(routes::proxy::get))
     })
