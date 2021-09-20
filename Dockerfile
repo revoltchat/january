@@ -13,4 +13,5 @@ FROM alpine:latest
 RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
 COPY --from=builder /home/rust/src/january/target/x86_64-unknown-linux-musl/release/january ./
 EXPOSE 7000
+ENV JANUARY_HOST 0.0.0.0:7000
 CMD ["./january"]

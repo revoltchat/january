@@ -2,6 +2,7 @@
 extern crate lazy_static;
 
 use actix_web::{web, App, HttpServer};
+use util::variables::HOST;
 
 pub mod routes;
 pub mod structs;
@@ -15,7 +16,7 @@ async fn main() -> std::io::Result<()> {
             .route("/embed", web::get().to(routes::embed::get))
             .route("/proxy", web::get().to(routes::proxy::get))
     })
-    .bind(("0.0.0.0", 7000))?
+    .bind(HOST.clone())?
     .run()
     .await
 }
