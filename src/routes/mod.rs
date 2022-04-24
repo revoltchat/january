@@ -1,3 +1,3 @@
 pub mod embed;
-pub mod proxy;
 pub mod info;
+pub mod proxy;

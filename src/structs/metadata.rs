@@ -4,12 +4,18 @@ use scraper::Selector;
 use serde::Serialize;
 use std::collections::HashMap;
 
-use crate::{structs::special::{BandcampType, TwitchType}, util::{
+use crate::{
+    structs::special::{BandcampType, TwitchType},
+    util::{
         request::{consume_fragment, consume_size, fetch},
         result::Error,
-    }};
+    },
+};
 
-use super::{media::{Image, ImageSize, Video}, special::Special};
+use super::{
+    media::{Image, ImageSize, Video},
+    special::Special,
+};
 
 #[derive(Debug, Serialize)]
 pub struct Metadata {
@@ -99,23 +105,22 @@ impl Metadata {
                         size,
                     }
                 }),
-            video: meta.remove("og:video")
+            video: meta
+                .remove("og:video")
                 .or_else(|| meta.remove("og:video:url"))
                 .or_else(|| meta.remove("og:video:secure_url"))
-                .map(|url| {
-                    Video {
-                        url,
-                        width: meta
-                            .remove("og:video:width")
-                            .unwrap_or_else(|| "0".to_string())
-                            .parse()
-                            .unwrap_or(0),
-                        height: meta
-                            .remove("og:video:height")
-                            .unwrap_or_else(|| "0".to_string())
-                            .parse()
-                            .unwrap_or(0),
-                    }
+                .map(|url| Video {
+                    url,
+                    width: meta
+                        .remove("og:video:width")
+                        .unwrap_or_else(|| "0".to_string())
+                        .parse()
+                        .unwrap_or(0),
+                    height: meta
+                        .remove("og:video:height")
+                        .unwrap_or_else(|| "0".to_string())
+                        .parse()
+                        .unwrap_or(0),
                 }),
             icon_url: link
                 .remove("apple-touch-icon")
@@ -173,7 +178,8 @@ impl Metadata {
 
         if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
             lazy_static! {
-                static ref RE_TIMESTAMP: Regex = Regex::new("(?:\\?|&)(?:t|start)=([\\w]+)").unwrap();
+                static ref RE_TIMESTAMP: Regex =
+                    Regex::new("(?:\\?|&)(?:t|start)=([\\w]+)").unwrap();
             }
 
             if let Some(video) = &self.video {
@@ -190,10 +196,10 @@ impl Metadata {
                 });
             }
         } else if let Some(captures) = RE_TWITCH.captures_iter(&self.url).next() {
-                return Ok(Special::Twitch {
-                    id: captures[1].to_string(),
-                    content_type: TwitchType::Channel,
-                });
+            return Ok(Special::Twitch {
+                id: captures[1].to_string(),
+                content_type: TwitchType::Channel,
+            });
         } else if let Some(captures) = RE_TWITCH_VOD.captures_iter(&self.url).next() {
             return Ok(Special::Twitch {
                 id: captures[1].to_string(),
@@ -219,11 +225,17 @@ impl Metadata {
 
             if let Some(video) = &self.video {
                 if let Some(captures) = RE_TRACK.captures_iter(&video.url).next() {
-                    return Ok(Special::Bandcamp { content_type: BandcampType::Track, id: captures[1].to_string() })
+                    return Ok(Special::Bandcamp {
+                        content_type: BandcampType::Track,
+                        id: captures[1].to_string(),
+                    });
                 }
 
                 if let Some(captures) = RE_ALBUM.captures_iter(&video.url).next() {
-                    return Ok(Special::Bandcamp { content_type: BandcampType::Album, id: captures[1].to_string() })
+                    return Ok(Special::Bandcamp {
+                        content_type: BandcampType::Album,
+                        id: captures[1].to_string(),
+                    });
                 }
             }
         }
