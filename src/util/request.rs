@@ -26,8 +26,7 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
 
     let content_type = resp
         .headers()
-        .get(CONTENT_TYPE)
-        .ok_or_else(|| Error::MissingContentType)?
+        .get(CONTENT_TYPE).ok_or(Error::MissingContentType)?
         .to_str()
         .map_err(|_| Error::ConversionFailed)?;
 
