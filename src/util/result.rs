@@ -1,5 +1,5 @@
 use actix_web::http::StatusCode;
-use actix_web::{web::HttpResponse, ResponseError};
+use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
 use serde_json;
 use std::fmt::Display;
@@ -28,7 +28,7 @@ impl Display for Error {
 
 impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
-        match &self {
+        match *self {
             Error::CouldNotDetermineImageSize => StatusCode::INTERNAL_SERVER_ERROR,
             Error::FailedToParseContentType => StatusCode::INTERNAL_SERVER_ERROR,
             Error::FailedToConsumeBytes => StatusCode::INTERNAL_SERVER_ERROR,
@@ -43,7 +43,7 @@ impl ResponseError for Error {
         }
     }
 
-    fn error_response(&self) -> HttpResponse<actix_web::dev::Body> {
+    fn error_response(&self) -> HttpResponse {
         let body = serde_json::to_string(&self).unwrap();
 
         HttpResponse::build(self.status_code())
