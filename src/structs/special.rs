@@ -10,7 +10,7 @@ pub enum TwitchType {
 #[derive(Debug, Serialize)]
 pub enum BandcampType {
     Album,
-    Track
+    Track,
 }
 
 #[derive(Debug, Serialize)]
@@ -34,6 +34,6 @@ pub enum Special {
     Soundcloud,
     Bandcamp {
         content_type: BandcampType,
-        id: String
-    }
+        id: String,
+    },
 }
