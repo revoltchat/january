@@ -30,8 +30,6 @@ Image proxy and metadata scraper.
 
 | Command            | Description                                                                                 |
 | ------------------ | ------------------------------------------------------------------------------------------- |
-| `./publish.sh`     | Publish a Docker Image.                                                                     |
-| `./set_version.sh` | Update the version. **Not intended for PR use.**                                            |
 | `cargo build`      | Build/compile January.                                                                      |
 | `cargo run`        | Run January.                                                                                |
 | `cargo fmt`        | Format January. Not intended for PR use to avoid accidentally formatting unformatted files. |
