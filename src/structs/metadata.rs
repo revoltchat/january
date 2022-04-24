@@ -51,7 +51,7 @@ impl Metadata {
             let node = el.value();
 
             if let (Some(property), Some(content)) = (
-                node.attr("property").or(node.attr("name")),
+                node.attr("property").or_else(|| node.attr("name")),
                 node.attr("content"),
             ) {
                 meta.insert(property.to_string(), content.to_string());
@@ -127,7 +127,7 @@ impl Metadata {
                 .or_else(|| link.remove("icon"))
                 .map(|mut v| {
                     // If relative URL, prepend root URL.
-                    if let Some(ch) = v.chars().nth(0) {
+                    if let Some(ch) = v.chars().next() {
                         if ch == '/' {
                             v = format!("{}{}", &url, v);
                         }
