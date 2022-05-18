@@ -2,6 +2,7 @@ use actix_web::{
     web::{self, Query},
     Responder,
 };
+use regex::Regex;
 use serde::Deserialize;
 
 use crate::structs::metadata::Metadata;
@@ -18,9 +19,34 @@ pub struct Parameters {
 }
 
 pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
-    let url = info.into_inner().url;
+    let mut url = info.into_inner().url;
+
+    // Twitter is a piece of shit and does not
+    // provide metadata in an easily consumable format.
+    //
+    // So... we just redirect everything to Nitter.
+    //
+    // Fun bonus: Twitter denied our developer application
+    // which would've been the only way to pull properly
+    // formatted Tweet data out and what's worse is that this
+    // also prevents us adding those "connections" that other
+    // platforms have.
+    //
+    // In any case, because Twitter, they
+    // do not provide OpenGraph data.
+    lazy_static! {
+        static ref RE_TWITTER: Regex =
+            Regex::new("^(?:https?://)?(?:www\\.)?twitter\\.com").unwrap();
+    }
+
+    if RE_TWITTER.is_match(&url) {
+        url = RE_TWITTER.replace(&url, "https://nitter.net").into();
+    }
+
+    // Fetch URL
     let (resp, mime) = fetch(&url).await?;
 
+    // Match appropriate MIME type to process
     match (mime.type_(), mime.subtype()) {
         (_, mime::HTML) => {
             let mut metadata = Metadata::from(resp, url).await?;
