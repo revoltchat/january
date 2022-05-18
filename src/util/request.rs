@@ -33,6 +33,7 @@ pub async fn fetch(url: &str) -> Result<(Response, Mime), Error> {
     let mime: mime::Mime = content_type
         .parse()
         .map_err(|_| Error::FailedToParseContentType)?;
+    
     Ok((resp, mime))
 }
 

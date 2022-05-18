@@ -13,7 +13,7 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
     let url = info.into_inner().url;
     let (resp, mime) = fetch(&url).await?;
 
-    if let mime::IMAGE = mime.type_() {
+    if matches!(mime.type_(), mime::IMAGE | mime::VIDEO) {
         let body = resp
             .bytes()
             .await
