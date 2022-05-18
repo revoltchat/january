@@ -5,7 +5,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 
 use crate::{
-    structs::special::{BandcampType, TwitchType},
+    structs::special::{BandcampType, LightspeedType, TwitchType},
     util::{
         request::{consume_fragment, consume_size, fetch},
         result::Error,
@@ -168,6 +168,8 @@ impl Metadata {
             // ! FIXME: use youtube-dl to fetch metadata
             static ref RE_YOUTUBE: Regex = Regex::new("^(?:(?:https?:)?//)?(?:(?:www|m)\\.)?(?:(?:youtube\\.com|youtu.be))(?:/(?:[\\w\\-]+\\?v=|embed/|v/)?)([\\w\\-]+)(?:\\S+)?$").unwrap();
 
+            static ref RE_LIGHTSPEED: Regex = Regex::new("^(?:https?://)?(?:[\\w]+\\.)?lightspeed\\.tv/([a-z0-9_]{4,25})").unwrap();
+
             // ! FIXME: use Twitch API to fetch metadata
             static ref RE_TWITCH: Regex = Regex::new("^(?:https?://)?(?:www\\.|go\\.)?twitch\\.tv/([a-z0-9_]+)($|\\?)").unwrap();
             static ref RE_TWITCH_VOD: Regex = Regex::new("^(?:https?://)?(?:www\\.|go\\.)?twitch\\.tv/videos/([0-9]+)($|\\?)").unwrap();
@@ -199,6 +201,11 @@ impl Metadata {
                     timestamp: None,
                 });
             }
+        } else if let Some(captures) = RE_LIGHTSPEED.captures_iter(&self.original_url).next() {
+            return Ok(Special::Lightspeed {
+                id: captures[1].to_string(),
+                content_type: LightspeedType::Channel,
+            });
         } else if let Some(captures) = RE_TWITCH.captures_iter(&self.original_url).next() {
             return Ok(Special::Twitch {
                 id: captures[1].to_string(),
@@ -251,6 +258,15 @@ impl Metadata {
 
     pub async fn resolve_external(&mut self) {
         if let Ok(special) = self.generate_special().await {
+            match &special {
+                Special::YouTube { .. } => self.colour = Some("#FF424F".to_string()),
+                Special::Twitch { .. } => self.colour = Some("#7B68EE".to_string()),
+                Special::Lightspeed { .. } => self.colour = Some("#7445D9".to_string()),
+                Special::Spotify { .. } => self.colour = Some("#1ABC9C".to_string()),
+                Special::Soundcloud { .. } => self.colour = Some("#FF7F50".to_string()),
+                _ => {}
+            }
+
             self.special = Some(special);
         }
 

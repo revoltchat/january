@@ -8,6 +8,11 @@ pub enum TwitchType {
 }
 
 #[derive(Debug, Serialize)]
+pub enum LightspeedType {
+    Channel,
+}
+
+#[derive(Debug, Serialize)]
 pub enum BandcampType {
     Album,
     Track,
@@ -23,6 +28,10 @@ pub enum Special {
 
         #[serde(skip_serializing_if = "Option::is_none")]
         timestamp: Option<String>,
+    },
+    Lightspeed {
+        content_type: LightspeedType,
+        id: String,
     },
     Twitch {
         content_type: TwitchType,
