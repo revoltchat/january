@@ -276,6 +276,9 @@ impl Metadata {
     }
 
     pub fn is_none(&self) -> bool {
-        self.title.is_none() && self.description.is_none() && self.image.is_none()
+        self.title.is_none()
+            && self.description.is_none()
+            && self.image.is_none()
+            && self.video.is_none()
     }
 }
