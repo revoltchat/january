@@ -8,6 +8,7 @@ use std::fmt::Display;
 #[serde(tag = "type")]
 pub enum Error {
     CouldNotDetermineImageSize,
+    CouldNotDetermineVideoSize,
     FailedToParseContentType,
     FailedToConsumeBytes,
     FailedToConsumeText,
@@ -17,6 +18,7 @@ pub enum Error {
     ConversionFailed,
     ReqwestFailed,
     RequestFailed,
+    ProbeError,
     LabelMe,
 }
 
@@ -30,6 +32,7 @@ impl ResponseError for Error {
     fn status_code(&self) -> StatusCode {
         match *self {
             Error::CouldNotDetermineImageSize => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::CouldNotDetermineVideoSize => StatusCode::INTERNAL_SERVER_ERROR,
             Error::FailedToParseContentType => StatusCode::INTERNAL_SERVER_ERROR,
             Error::FailedToConsumeBytes => StatusCode::INTERNAL_SERVER_ERROR,
             Error::FailedToConsumeText => StatusCode::INTERNAL_SERVER_ERROR,
@@ -39,6 +42,7 @@ impl ResponseError for Error {
             Error::ConversionFailed => StatusCode::INTERNAL_SERVER_ERROR,
             Error::ReqwestFailed => StatusCode::INTERNAL_SERVER_ERROR,
             Error::RequestFailed => StatusCode::BAD_REQUEST,
+            Error::ProbeError => StatusCode::INTERNAL_SERVER_ERROR,
             Error::LabelMe => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }

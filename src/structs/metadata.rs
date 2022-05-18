@@ -20,6 +20,7 @@ use super::{
 #[derive(Debug, Serialize)]
 pub struct Metadata {
     url: String,
+    original_url: String,
     special: Option<Special>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -138,7 +139,8 @@ impl Metadata {
             colour: meta.remove("theme-color"),
             opengraph_type: meta.remove("og:type"),
             site_name: meta.remove("og:site_name"),
-            url: meta.remove("og:url").unwrap_or(url),
+            url: meta.remove("og:url").unwrap_or_else(|| url.clone()),
+            original_url: url,
             special: None,
         })
     }
@@ -151,8 +153,8 @@ impl Metadata {
                 return Ok(());
             }
 
-            let (resp, _) = fetch(&image.url).await?;
-            let (width, height) = consume_size(resp).await?;
+            let (resp, mime) = fetch(&image.url).await?;
+            let (width, height) = consume_size(resp, mime).await?;
 
             image.width = width;
             image.height = height;
@@ -174,6 +176,8 @@ impl Metadata {
             static ref RE_SPOTIFY: Regex = Regex::new("^(?:https?://)?open.spotify.com/(track|user|artist|album|playlist)/([A-z0-9]+)").unwrap();
             static ref RE_SOUNDCLOUD: Regex = Regex::new("^(?:https?://)?soundcloud.com/([a-zA-Z0-9-]+)/([A-z0-9-]+)").unwrap();
             static ref RE_BANDCAMP: Regex = Regex::new("^(?:https?://)?(?:[A-z0-9_-]+).bandcamp.com/(track|album)/([A-z0-9_-]+)").unwrap();
+
+            static ref RE_GIF: Regex = Regex::new("^(?:https?://)?(www\\.)?(tenor\\.com/view|giphy\\.com/gifs|gfycat\\.com|redgifs\\.com/watch)/[\\w\\d-]+").unwrap();
         }
 
         if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
@@ -195,29 +199,29 @@ impl Metadata {
                     timestamp: None,
                 });
             }
-        } else if let Some(captures) = RE_TWITCH.captures_iter(&self.url).next() {
+        } else if let Some(captures) = RE_TWITCH.captures_iter(&self.original_url).next() {
             return Ok(Special::Twitch {
                 id: captures[1].to_string(),
                 content_type: TwitchType::Channel,
             });
-        } else if let Some(captures) = RE_TWITCH_VOD.captures_iter(&self.url).next() {
+        } else if let Some(captures) = RE_TWITCH_VOD.captures_iter(&self.original_url).next() {
             return Ok(Special::Twitch {
                 id: captures[1].to_string(),
                 content_type: TwitchType::Video,
             });
-        } else if let Some(captures) = RE_TWITCH_CLIP.captures_iter(&self.url).next() {
+        } else if let Some(captures) = RE_TWITCH_CLIP.captures_iter(&self.original_url).next() {
             return Ok(Special::Twitch {
                 id: captures[1].to_string(),
                 content_type: TwitchType::Clip,
             });
-        } else if let Some(captures) = RE_SPOTIFY.captures_iter(&self.url).next() {
+        } else if let Some(captures) = RE_SPOTIFY.captures_iter(&self.original_url).next() {
             return Ok(Special::Spotify {
                 content_type: captures[1].to_string(),
                 id: captures[2].to_string(),
             });
-        } else if RE_SOUNDCLOUD.is_match(&self.url) {
+        } else if RE_SOUNDCLOUD.is_match(&self.original_url) {
             return Ok(Special::Soundcloud);
-        } else if RE_BANDCAMP.is_match(&self.url) {
+        } else if RE_BANDCAMP.is_match(&self.original_url) {
             lazy_static! {
                 static ref RE_TRACK: Regex = Regex::new("track=(\\d+)").unwrap();
                 static ref RE_ALBUM: Regex = Regex::new("album=(\\d+)").unwrap();
@@ -238,6 +242,8 @@ impl Metadata {
                     });
                 }
             }
+        } else if RE_GIF.is_match(&self.original_url) {
+            return Ok(Special::GIF);
         }
 
         Ok(Special::None)

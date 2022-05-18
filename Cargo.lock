@@ -493,6 +493,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "ffprobe"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4151d364a3709c400c4aaca1988324f02dfde8d3e2e8543176e596d39eb414ac"
+dependencies = [
+ "serde",
+ "serde_json",
+]
+
+[[package]]
 name = "firestorm"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -826,6 +836,7 @@ dependencies = [
  "actix-web",
  "dotenv",
  "env_logger",
+ "ffprobe",
  "imagesize",
  "lazy_static",
  "log",
@@ -835,6 +846,7 @@ dependencies = [
  "scraper",
  "serde",
  "serde_json",
+ "tempfile",
 ]
 
 [[package]]

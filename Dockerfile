@@ -1,17 +1,18 @@
 # Build Stage
-FROM ekidd/rust-musl-builder:nightly-2021-02-13 AS builder
+FROM rustlang/rust:nightly-slim AS builder
+USER 0:0
 WORKDIR /home/rust/src
 
 RUN USER=root cargo new --bin january
 WORKDIR /home/rust/src/january
 COPY Cargo.toml Cargo.lock ./
 COPY src ./src
-RUN cargo build --release
+RUN apt-get update && apt-get install -y libssl-dev pkg-config && cargo install --locked --path .
 
 # Bundle Stage
-FROM alpine:latest
-RUN apk update && apk add ca-certificates && rm -rf /var/cache/apk/*
-COPY --from=builder /home/rust/src/january/target/x86_64-unknown-linux-musl/release/january ./
+FROM debian:buster-slim
+RUN apt-get update && apt-get install -y ca-certificates ffmpeg
+COPY --from=builder /usr/local/cargo/bin/january ./
 EXPOSE 7000
 ENV JANUARY_HOST 0.0.0.0:7000
 CMD ["./january"]

@@ -17,6 +17,7 @@ pub enum BandcampType {
 #[serde(tag = "type")]
 pub enum Special {
     None,
+    GIF,
     YouTube {
         id: String,
 
