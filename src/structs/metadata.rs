@@ -3,6 +3,7 @@ use reqwest::Response;
 use scraper::Selector;
 use serde::Serialize;
 use std::collections::HashMap;
+use validator::Validate;
 
 use crate::{
     structs::special::{BandcampType, LightspeedType, TwitchType},
@@ -17,28 +18,36 @@ use super::{
     special::Special,
 };
 
-#[derive(Debug, Serialize)]
+#[derive(Validate, Debug, Serialize)]
 pub struct Metadata {
+    #[validate(length(min = 1, max = 256))]
     url: String,
     original_url: String,
     special: Option<Special>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(length(min = 1, max = 100))]
     title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(length(min = 1, max = 2000))]
     description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
     image: Option<Image>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate]
     video: Option<Video>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     opengraph_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(length(min = 1, max = 100))]
     site_name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(length(min = 1, max = 256))]
     icon_url: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[validate(length(min = 1, max = 64))]
     colour: Option<String>,
 }
 
@@ -69,7 +78,7 @@ impl Metadata {
             }
         }
 
-        Ok(Metadata {
+        let metadata = Metadata {
             title: meta
                 .remove("og:title")
                 .or_else(|| meta.remove("twitter:title"))
@@ -142,7 +151,13 @@ impl Metadata {
             url: meta.remove("og:url").unwrap_or_else(|| url.clone()),
             original_url: url,
             special: None,
-        })
+        };
+
+        metadata
+            .validate()
+            .map_err(|error| Error::FailedValidation { error })?;
+
+        Ok(metadata)
     }
 
     async fn resolve_image(&mut self) -> Result<(), Error> {

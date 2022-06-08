@@ -3,6 +3,7 @@ use actix_web::{HttpResponse, ResponseError};
 use serde::Serialize;
 use serde_json;
 use std::fmt::Display;
+use validator::ValidationErrors;
 
 #[derive(Serialize, Debug)]
 #[serde(tag = "type")]
@@ -20,6 +21,10 @@ pub enum Error {
     RequestFailed,
     ProbeError,
     LabelMe,
+    FailedValidation {
+        #[serde(skip_serializing, skip_deserializing)]
+        error: ValidationErrors,
+    },
 }
 
 impl Display for Error {
@@ -44,6 +49,7 @@ impl ResponseError for Error {
             Error::RequestFailed => StatusCode::BAD_REQUEST,
             Error::ProbeError => StatusCode::INTERNAL_SERVER_ERROR,
             Error::LabelMe => StatusCode::INTERNAL_SERVER_ERROR,
+            Error::FailedValidation { .. } => StatusCode::BAD_REQUEST,
         }
     }
 
