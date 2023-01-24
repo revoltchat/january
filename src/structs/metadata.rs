@@ -29,7 +29,7 @@ pub struct Metadata {
     #[validate(length(min = 1, max = 100))]
     title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    #[validate(length(min = 1, max = 2000))]
+    #[validate(length(min = 0, max = 2000))]
     description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     #[validate]
