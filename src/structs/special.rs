@@ -46,4 +46,7 @@ pub enum Special {
         content_type: BandcampType,
         id: String,
     },
+    Streamable {
+        id: String,
+    },
 }

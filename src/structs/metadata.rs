@@ -194,10 +194,16 @@ impl Metadata {
             static ref RE_SOUNDCLOUD: Regex = Regex::new("^(?:https?://)?soundcloud.com/([a-zA-Z0-9-]+)/([A-z0-9-]+)").unwrap();
             static ref RE_BANDCAMP: Regex = Regex::new("^(?:https?://)?(?:[A-z0-9_-]+).bandcamp.com/(track|album)/([A-z0-9_-]+)").unwrap();
 
+            static ref RE_STREAMABLE: Regex = Regex::new("^(?:https?://)?(?:www\\.)?streamable\\.com/([\\w\\d-]+)").unwrap();
+
             static ref RE_GIF: Regex = Regex::new("^(?:https?://)?(www\\.)?(gifbox\\.me/view|yiffbox\\.me/view|tenor\\.com/view|giphy\\.com/gifs|gfycat\\.com|redgifs\\.com/watch)/[\\w\\d-]+").unwrap();
         }
 
-        if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
+        if let Some(captures) = RE_STREAMABLE.captures_iter(&self.url).next() {
+            return Ok(Special::Streamable {
+                id: captures[1].to_string(),
+            });
+        } else if let Some(captures) = RE_YOUTUBE.captures_iter(&self.url).next() {
             lazy_static! {
                 static ref RE_TIMESTAMP: Regex =
                     Regex::new("(?:\\?|&)(?:t|start)=([\\w]+)").unwrap();
