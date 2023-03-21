@@ -1,8 +1,11 @@
 use serde::Serialize;
 
-use super::{media::{Image, Video}, metadata::Metadata};
+use super::{
+    media::{Image, Video},
+    metadata::Metadata,
+};
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(tag = "type")]
 #[allow(clippy::large_enum_variant)]
 pub enum Embed {
