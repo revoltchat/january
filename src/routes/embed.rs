@@ -19,7 +19,7 @@ lazy_static! {
     static ref CACHE: moka::future::Cache<String, Result<Embed, Error>> =
         moka::future::Cache::builder()
             .max_capacity(1_000)
-            .time_to_live(Duration::from_secs(30 * 60))
+            .time_to_live(Duration::from_secs(60))
             .build();
 }
 

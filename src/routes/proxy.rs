@@ -14,7 +14,7 @@ lazy_static! {
                 value.as_ref().map(|bytes| bytes.len() as u32).unwrap_or(1)
             })
             .max_capacity(1024 * 1024 * 1024)
-            .time_to_live(Duration::from_secs(30 * 60))
+            .time_to_live(Duration::from_secs(60))
             .build();
 }
 
