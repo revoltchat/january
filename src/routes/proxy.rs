@@ -1,4 +1,4 @@
-use actix_web::{web::Query, HttpResponse, Responder};
+use actix_web::{http::header::ContentType, web::Query, HttpResponse, Responder};
 use serde::Deserialize;
 
 use crate::util::request::fetch;
@@ -18,7 +18,9 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
             .bytes()
             .await
             .map_err(|_| Error::FailedToConsumeBytes)?;
-        Ok(HttpResponse::Ok().body(body))
+        Ok(HttpResponse::Ok()
+            .append_header(ContentType(mime))
+            .body(body))
     } else {
         Err(Error::NotAllowedToProxy)
     }
