@@ -18,7 +18,7 @@ use super::{
     special::Special,
 };
 
-#[derive(Validate, Debug, Serialize)]
+#[derive(Clone, Validate, Debug, Serialize)]
 pub struct Metadata {
     #[validate(length(min = 1, max = 256))]
     url: String,
@@ -52,7 +52,7 @@ pub struct Metadata {
 }
 
 impl Metadata {
-    pub async fn from(resp: Response, url: String) -> Result<Metadata, Error> {
+    pub async fn from(resp: Response, original_url: String) -> Result<Metadata, Error> {
         let fragment = consume_fragment(resp).await?;
 
         let meta_selector = Selector::parse("meta").map_err(|_| Error::MetaSelectionFailed)?;
@@ -92,14 +92,19 @@ impl Metadata {
                 .or_else(|| meta.remove("og:image:secure_url"))
                 .or_else(|| meta.remove("twitter:image"))
                 .or_else(|| meta.remove("twitter:image:src"))
-                .map(|url| {
+                .map(|mut url| {
+                    // If relative URL, prepend root URL. Also if root URL ends with a slash, remove it.
+                    if let Some(ch) = url.chars().next() {
+                        if ch == '/' {
+                            url = format!("{}{}", &original_url.trim_end_matches('/'), &url);
+                        }
+                    }
                     let mut size = ImageSize::Preview;
                     if let Some(card) = meta.remove("twitter:card") {
                         if &card == "summary_large_image" {
                             size = ImageSize::Large;
                         }
                     }
-
                     Image {
                         url,
                         width: meta
@@ -119,18 +124,26 @@ impl Metadata {
                 .remove("og:video")
                 .or_else(|| meta.remove("og:video:url"))
                 .or_else(|| meta.remove("og:video:secure_url"))
-                .map(|url| Video {
-                    url,
-                    width: meta
-                        .remove("og:video:width")
-                        .unwrap_or_else(|| "0".to_string())
-                        .parse()
-                        .unwrap_or(0),
-                    height: meta
-                        .remove("og:video:height")
-                        .unwrap_or_else(|| "0".to_string())
-                        .parse()
-                        .unwrap_or(0),
+                .map(|mut url| {
+                    // If relative URL, prepend root URL. Also if root URL ends with a slash, remove it.
+                    if let Some(ch) = url.chars().next() {
+                        if ch == '/' {
+                            url = format!("{}{}", &original_url.trim_end_matches('/'), &url);
+                        }
+                    }
+                    Video {
+                        url,
+                        width: meta
+                            .remove("og:video:width")
+                            .unwrap_or_else(|| "0".to_string())
+                            .parse()
+                            .unwrap_or(0),
+                        height: meta
+                            .remove("og:video:height")
+                            .unwrap_or_else(|| "0".to_string())
+                            .parse()
+                            .unwrap_or(0),
+                    }
                 }),
             icon_url: link
                 .remove("apple-touch-icon")
@@ -139,7 +152,7 @@ impl Metadata {
                     // If relative URL, prepend root URL.
                     if let Some(ch) = v.chars().next() {
                         if ch == '/' {
-                            v = format!("{}{}", &url, v);
+                            v = format!("{}{}", &original_url.trim_end_matches('/'), v);
                         }
                     }
 
@@ -148,8 +161,10 @@ impl Metadata {
             colour: meta.remove("theme-color"),
             opengraph_type: meta.remove("og:type"),
             site_name: meta.remove("og:site_name"),
-            url: meta.remove("og:url").unwrap_or_else(|| url.clone()),
-            original_url: url,
+            url: meta
+                .remove("og:url")
+                .unwrap_or_else(|| original_url.clone()),
+            original_url,
             special: None,
         };
 

@@ -5,7 +5,7 @@ use serde_json;
 use std::fmt::Display;
 use validator::ValidationErrors;
 
-#[derive(Serialize, Debug)]
+#[derive(Clone, Serialize, Debug)]
 #[serde(tag = "type")]
 pub enum Error {
     CouldNotDetermineImageSize,

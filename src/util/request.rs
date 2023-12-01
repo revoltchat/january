@@ -16,7 +16,8 @@ use super::{result::Error, variables::MAX_BYTES};
 lazy_static! {
     static ref CLIENT: Client = reqwest::Client::builder()
         .user_agent("Mozilla/5.0 (compatible; January/1.0; +https://github.com/revoltchat/january)")
-        .timeout(Duration::from_secs(2))
+        .timeout(Duration::from_secs(15))
+        .connect_timeout(Duration::from_secs(5))
         .build()
         .expect("reqwest Client");
 }

@@ -1,24 +1,24 @@
 use serde::Serialize;
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub enum TwitchType {
     Channel,
     Video,
     Clip,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub enum LightspeedType {
     Channel,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 pub enum BandcampType {
     Album,
     Track,
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Clone, Debug, Serialize)]
 #[serde(tag = "type")]
 pub enum Special {
     None,
