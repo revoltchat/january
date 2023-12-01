@@ -18,7 +18,7 @@ use super::{
     special::Special,
 };
 
-#[derive(Validate, Debug, Serialize)]
+#[derive(Clone, Validate, Debug, Serialize)]
 pub struct Metadata {
     #[validate(length(min = 1, max = 256))]
     url: String,

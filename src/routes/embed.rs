@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use actix_web::{
     web::{self, Query},
     Responder,
@@ -13,14 +15,20 @@ use crate::{
     util::{request::consume_size, result::Error},
 };
 
+lazy_static! {
+    static ref CACHE: moka::future::Cache<String, Result<Embed, Error>> =
+        moka::future::Cache::builder()
+            .max_capacity(1_000)
+            .time_to_live(Duration::from_secs(60))
+            .build();
+}
+
 #[derive(Deserialize)]
 pub struct Parameters {
     url: String,
 }
 
-pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
-    let mut url = info.into_inner().url;
-
+async fn embed(mut url: String) -> Result<Embed, Error> {
     // Twitter is a piece of shit and does not
     // provide metadata in an easily consumable format.
     //
@@ -53,30 +61,38 @@ pub async fn get(info: Query<Parameters>) -> Result<impl Responder, Error> {
             metadata.resolve_external().await;
 
             if metadata.is_none() {
-                return Ok(web::Json(Embed::None));
+                return Ok(Embed::None);
             }
 
-            Ok(web::Json(Embed::Website(metadata)))
+            Ok(Embed::Website(metadata))
         }
         (mime::IMAGE, _) => {
             if let Ok((width, height)) = consume_size(resp, mime).await {
-                Ok(web::Json(Embed::Image(Image {
+                Ok(Embed::Image(Image {
                     url,
                     width,
                     height,
                     size: ImageSize::Large,
-                })))
+                }))
             } else {
-                Ok(web::Json(Embed::None))
+                Ok(Embed::None)
             }
         }
         (mime::VIDEO, _) => {
             if let Ok((width, height)) = consume_size(resp, mime).await {
-                Ok(web::Json(Embed::Video(Video { url, width, height })))
+                Ok(Embed::Video(Video { url, width, height }))
             } else {
-                Ok(web::Json(Embed::None))
+                Ok(Embed::None)
             }
         }
-        _ => Ok(web::Json(Embed::None)),
+        _ => Ok(Embed::None),
     }
+}
+
+pub async fn get(Query(info): Query<Parameters>) -> Result<impl Responder, Error> {
+    let url = info.url;
+    let result = CACHE
+        .get_with(url.clone(), async { embed(url).await })
+        .await;
+    result.map(web::Json)
 }
