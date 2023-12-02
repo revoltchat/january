@@ -4,7 +4,7 @@ use actix_web::web::Bytes;
 use actix_web::{web::Query, HttpResponse, Responder};
 use serde::Deserialize;
 
-use crate::util::request::fetch;
+use crate::util::request::{fetch, get_bytes};
 use crate::util::result::Error;
 
 lazy_static! {
@@ -24,14 +24,11 @@ pub struct Parameters {
 }
 
 async fn proxy(url: String) -> Result<Bytes, Error> {
-    let (resp, mime) = fetch(&url).await?;
+    let (mut resp, mime) = fetch(&url).await?;
 
     if matches!(mime.type_(), mime::IMAGE | mime::VIDEO) {
-        let body = resp
-            .bytes()
-            .await
-            .map_err(|_| Error::FailedToConsumeBytes)?;
-        Ok(body)
+        let bytes = get_bytes(&mut resp).await?;
+        Ok(bytes)
     } else {
         Err(Error::NotAllowedToProxy)
     }
