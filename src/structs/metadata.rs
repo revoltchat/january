@@ -208,6 +208,7 @@ impl Metadata {
             static ref RE_SPOTIFY: Regex = Regex::new("^(?:https?://)?open.spotify.com/(track|user|artist|album|playlist)/([A-z0-9]+)").unwrap();
             static ref RE_SOUNDCLOUD: Regex = Regex::new("^(?:https?://)?soundcloud.com/([a-zA-Z0-9-]+)/([A-z0-9-]+)").unwrap();
             static ref RE_BANDCAMP: Regex = Regex::new("^(?:https?://)?(?:[A-z0-9_-]+).bandcamp.com/(track|album)/([A-z0-9_-]+)").unwrap();
+            static ref RE_APPLE_MUSIC: Regex = Regex::new("^(?:https?://)?music\\.apple\\.com/(?:[a-z]{2}/)?album/(?:[a-zA-Z0-9-]+)/(\\d+)(?:\\?i=(\\d+))?").unwrap();
 
             static ref RE_STREAMABLE: Regex = Regex::new("^(?:https?://)?(?:www\\.)?streamable\\.com/([\\w\\d-]+)").unwrap();
 
@@ -287,6 +288,11 @@ impl Metadata {
             }
         } else if RE_GIF.is_match(&self.original_url) {
             return Ok(Special::GIF);
+        } else if let Some(captures) = RE_APPLE_MUSIC.captures_iter(&self.original_url).next() {
+            return Ok(Special::AppleMusic {
+                album_id: captures[1].to_string(),
+                track_id: captures.get(2).map(|m| m.as_str().to_string()),
+            });
         }
 
         Ok(Special::None)
@@ -300,6 +306,7 @@ impl Metadata {
                 Special::Lightspeed { .. } => self.colour = Some("#7445D9".to_string()),
                 Special::Spotify { .. } => self.colour = Some("#1ABC9C".to_string()),
                 Special::Soundcloud { .. } => self.colour = Some("#FF7F50".to_string()),
+                Special::AppleMusic { .. } => self.colour = Some("#FA233B".to_string()),
                 _ => {}
             }
 
