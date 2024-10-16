@@ -1,3 +1,6 @@
+> [!IMPORTANT]
+> This project is now part of [revoltchat/backend @ crates/services/january](https://github.com/revoltchat/backend/tree/main/crates/services/january).
+
 # January
 
 ## Description
